@@ -6,10 +6,13 @@ export async function GET(request: NextRequest) {
     const searchParams = request.nextUrl.searchParams;
     const hideShorts = searchParams.get('hideShorts') === 'true';
     const hideHidden = searchParams.get('hideHidden') === 'true';
+    const perChannel = searchParams.get('perChannel');
+    const perChannelLimit = perChannel ? parseInt(perChannel, 10) : undefined;
 
     const videos = await db.getVideos({
       hideShorts,
       hideHidden,
+      perChannel: perChannelLimit,
     });
 
     return NextResponse.json(videos);

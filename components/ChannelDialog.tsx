@@ -1,8 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { buildRssUrl, isValidChannelId } from '@/lib/youtube/parser';
 import { z } from 'zod';
+import type { Channel } from '@/lib/supabase/types';
 
 const channelSchema = z.object({
   input: z.string().min(1, 'Bitte geben Sie eine Channel ID oder RSS URL ein'),
@@ -11,14 +12,28 @@ const channelSchema = z.object({
 interface ChannelDialogProps {
   isOpen: boolean;
   onClose: () => void;
+  mode?: 'add' | 'edit';
+  channel?: Channel;
   onAdd: (channelId: string, rssUrl: string, title?: string) => Promise<void>;
+  onEdit?: (id: string, channelId: string, rssUrl: string, title?: string) => Promise<void>;
 }
 
-export function ChannelDialog({ isOpen, onClose, onAdd }: ChannelDialogProps) {
+export function ChannelDialog({ isOpen, onClose, mode = 'add', channel, onAdd, onEdit }: ChannelDialogProps) {
   const [input, setInput] = useState('');
   const [title, setTitle] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+
+  // Felder vorausfüllen wenn im Edit-Modus
+  useEffect(() => {
+    if (mode === 'edit' && channel) {
+      setInput(channel.channel_id);
+      setTitle(channel.title || '');
+    } else {
+      setInput('');
+      setTitle('');
+    }
+  }, [mode, channel, isOpen]);
 
   if (!isOpen) return null;
 
@@ -48,12 +63,18 @@ export function ChannelDialog({ isOpen, onClose, onAdd }: ChannelDialogProps) {
       }
 
       setLoading(true);
-      await onAdd(channelId, rssUrl, title.trim() || undefined);
+      
+      if (mode === 'edit' && channel && onEdit) {
+        await onEdit(channel.id, channelId, rssUrl, title.trim() || undefined);
+      } else {
+        await onAdd(channelId, rssUrl, title.trim() || undefined);
+      }
+      
       setInput('');
       setTitle('');
       onClose();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Fehler beim Hinzufügen des Kanals');
+      setError(err instanceof Error ? err.message : mode === 'edit' ? 'Fehler beim Aktualisieren des Kanals' : 'Fehler beim Hinzufügen des Kanals');
     } finally {
       setLoading(false);
     }
@@ -62,7 +83,7 @@ export function ChannelDialog({ isOpen, onClose, onAdd }: ChannelDialogProps) {
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-md">
-        <h2 className="text-xl font-bold mb-4">Kanal hinzufügen</h2>
+        <h2 className="text-xl font-bold mb-4">{mode === 'edit' ? 'Kanal bearbeiten' : 'Kanal hinzufügen'}</h2>
         <form onSubmit={handleSubmit}>
           <div className="mb-4">
             <label className="block text-sm font-medium mb-2">
@@ -107,7 +128,7 @@ export function ChannelDialog({ isOpen, onClose, onAdd }: ChannelDialogProps) {
               className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
               disabled={loading}
             >
-              {loading ? 'Hinzufügen...' : 'Hinzufügen'}
+              {loading ? (mode === 'edit' ? 'Speichern...' : 'Hinzufügen...') : (mode === 'edit' ? 'Speichern' : 'Hinzufügen')}
             </button>
           </div>
         </form>

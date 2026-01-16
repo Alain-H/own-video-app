@@ -7,6 +7,7 @@ import type { Channel } from '@/lib/supabase/types';
 export default function ChannelsPage() {
   const [channels, setChannels] = useState<Channel[]>([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [editingChannel, setEditingChannel] = useState<Channel | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
@@ -59,6 +60,33 @@ export default function ChannelsPage() {
     }
   };
 
+  const handleEditChannel = async (id: string, channelId: string, rssUrl: string, title?: string) => {
+    try {
+      const response = await fetch(`/api/channels/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ channel_id: channelId, rss_url: rssUrl, title }),
+      });
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Failed to update channel');
+      }
+      await loadChannels();
+    } catch (err) {
+      throw err;
+    }
+  };
+
+  const handleOpenEditDialog = (channel: Channel) => {
+    setEditingChannel(channel);
+    setIsDialogOpen(true);
+  };
+
+  const handleCloseDialog = () => {
+    setIsDialogOpen(false);
+    setEditingChannel(null);
+  };
+
   if (loading) {
     return <div className="text-center py-8">Lade Kanäle...</div>;
   }
@@ -68,7 +96,10 @@ export default function ChannelsPage() {
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold">Kanäle</h1>
         <button
-          onClick={() => setIsDialogOpen(true)}
+          onClick={() => {
+            setEditingChannel(null);
+            setIsDialogOpen(true);
+          }}
           className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
         >
           Kanal hinzufügen
@@ -112,6 +143,12 @@ export default function ChannelsPage() {
                   {channel.is_active ? 'Aktiv' : 'Inaktiv'}
                 </span>
                 <button
+                  onClick={() => handleOpenEditDialog(channel)}
+                  className="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50 dark:border-gray-600 dark:hover:bg-gray-700"
+                >
+                  Bearbeiten
+                </button>
+                <button
                   onClick={() => handleToggleActive(channel.id, channel.is_active)}
                   className="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50 dark:border-gray-600 dark:hover:bg-gray-700"
                 >
@@ -124,8 +161,11 @@ export default function ChannelsPage() {
       )}
       <ChannelDialog
         isOpen={isDialogOpen}
-        onClose={() => setIsDialogOpen(false)}
+        onClose={handleCloseDialog}
+        mode={editingChannel ? 'edit' : 'add'}
+        channel={editingChannel || undefined}
         onAdd={handleAddChannel}
+        onEdit={handleEditChannel}
       />
     </div>
   );

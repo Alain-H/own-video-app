@@ -22,6 +22,7 @@ export default function FeedPage() {
       const response = await fetch('/api/videos?' + new URLSearchParams({
         hideShorts: hideShorts.toString(),
         hideHidden: 'true',
+        perChannel: '3', // Server-seitig nur 3 Videos pro Kanal holen
       }));
       if (!response.ok) throw new Error('Failed to load videos');
       const data = await response.json();
@@ -53,22 +54,57 @@ export default function FeedPage() {
     return <div className="text-center py-8 text-red-600">{error}</div>;
   }
 
+  // Gruppiere Videos nach Kanal und nehme pro Kanal max. 3 neueste Videos
+  const videosByChannel = videos.reduce((acc, video) => {
+    const channelId = video.channel_id || 'unknown';
+    const channelName = video.channels?.title || video.channels?.channel_id || 'Unbekannter Kanal';
+    
+    if (!acc[channelId]) {
+      acc[channelId] = {
+        channel: video.channels,
+        channelName,
+        videos: [],
+      };
+    }
+    acc[channelId].videos.push(video);
+    return acc;
+  }, {} as Record<string, { channel: VideoWithChannel['channels']; channelName: string; videos: VideoWithChannel[] }>);
+
+  // Sortiere Videos pro Kanal nach published_at (neueste zuerst) und nehme max. 3
+  Object.keys(videosByChannel).forEach((channelId) => {
+    videosByChannel[channelId].videos.sort(
+      (a, b) => new Date(b.published_at).getTime() - new Date(a.published_at).getTime()
+    );
+    videosByChannel[channelId].videos = videosByChannel[channelId].videos.slice(0, 3);
+  });
+
+  const channelGroups = Object.values(videosByChannel);
+
   return (
     <div>
       <h1 className="text-3xl font-bold mb-6">Video Feed</h1>
       <ShortsToggle hideShorts={hideShorts} onToggle={setHideShorts} />
-      {videos.length === 0 ? (
+      {channelGroups.length === 0 ? (
         <div className="text-center py-8 text-gray-500">
           Keine Videos gefunden. Fügen Sie Kanäle hinzu oder importieren Sie welche.
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {videos.map((video) => (
-            <VideoCard
-              key={video.id}
-              video={video}
-              onToggleShort={handleToggleShort}
-            />
+        <div className="space-y-8">
+          {channelGroups.map((group, idx) => (
+            <div key={group.channel?.id || `unknown-${idx}`} className="space-y-4">
+              <h2 className="text-2xl font-semibold border-b border-gray-200 dark:border-gray-700 pb-2">
+                {group.channelName}
+              </h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                {group.videos.map((video) => (
+                  <VideoCard
+                    key={video.id}
+                    video={video}
+                    onToggleShort={handleToggleShort}
+                  />
+                ))}
+              </div>
+            </div>
           ))}
         </div>
       )}

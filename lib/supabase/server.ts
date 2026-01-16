@@ -99,6 +99,7 @@ export const db = {
     hideShorts?: boolean;
     hideHidden?: boolean;
     limit?: number;
+    perChannel?: number; // Anzahl Videos pro Kanal
   } = {}) {
     let query = supabaseAdmin
       .from('videos')
@@ -120,7 +121,33 @@ export const db = {
 
     const { data, error } = await query;
     if (error) throw error;
-    return data as VideoWithChannel[];
+    
+    let videos = data as VideoWithChannel[];
+    
+    // Wenn perChannel gesetzt ist, gruppiere und limitiere pro Kanal
+    if (options.perChannel) {
+      const videosByChannel = new Map<string, VideoWithChannel[]>();
+      
+      // Gruppiere nach channel_id
+      for (const video of videos) {
+        const channelId = video.channel_id || 'unknown';
+        if (!videosByChannel.has(channelId)) {
+          videosByChannel.set(channelId, []);
+        }
+        videosByChannel.get(channelId)!.push(video);
+      }
+      
+      // Pro Kanal nur die ersten N Videos nehmen (bereits sortiert nach published_at DESC)
+      videos = [];
+      for (const channelVideos of videosByChannel.values()) {
+        videos.push(...channelVideos.slice(0, options.perChannel));
+      }
+      
+      // Sortiere wieder nach published_at für konsistente Reihenfolge
+      videos.sort((a, b) => new Date(b.published_at).getTime() - new Date(a.published_at).getTime());
+    }
+    
+    return videos;
   },
 
   async getVideoByYoutubeId(youtubeVideoId: string) {
