@@ -1,6 +1,6 @@
-# Mini YouTube App
+# QuietTube App
 
-Eine moderne Webapp als "Mini YouTube" mit Node.js + TypeScript, Next.js (App Router), Tailwind CSS und Supabase (Postgres) als Datenbank. Die App nutzt ausschließlich RSS-Feeds für Kanal-Updates - keine YouTube Data API, kein OAuth, keine kostenpflichtigen Services.
+Eine moderne Webapp als "QuietTube" mit Node.js + TypeScript, Next.js (App Router), Tailwind CSS und Supabase (Postgres) als Datenbank. Die App nutzt ausschließlich RSS-Feeds für Kanal-Updates - keine YouTube Data API, kein OAuth, keine kostenpflichtigen Services.
 
 ## Features
 
