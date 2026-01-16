@@ -37,7 +37,18 @@ export default async function WatchPage({ params }: WatchPageProps) {
     } as any;
   }
 
+  // TypeScript type guard: ensure video is not null
+  if (!video) {
+    notFound();
+  }
+
+  // Now TypeScript knows video is not null
   const embedUrl = `https://www.youtube.com/embed/${videoId}`;
+  const videoTitle = video.title;
+  const videoUrl = video.url;
+  const videoPublishedAt = video.published_at;
+  const videoIsShort = video.is_short;
+  const videoChannels = video.channels;
 
   return (
     <div className="max-w-4xl mx-auto">
@@ -45,22 +56,22 @@ export default async function WatchPage({ params }: WatchPageProps) {
         <div className="aspect-video bg-black rounded-lg overflow-hidden mb-4">
           <iframe
             src={embedUrl}
-            title={video.title}
+            title={videoTitle}
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
             allowFullScreen
             className="w-full h-full"
           />
         </div>
-        <h1 className="text-2xl font-bold mb-2">{video.title}</h1>
-        {video.channels && (
+        <h1 className="text-2xl font-bold mb-2">{videoTitle}</h1>
+        {videoChannels && (
           <p className="text-gray-600 dark:text-gray-400 mb-2">
-            Kanal: {video.channels.title || video.channels.channel_id}
+            Kanal: {videoChannels.title || videoChannels.channel_id}
           </p>
         )}
         <p className="text-sm text-gray-500 dark:text-gray-500">
-          Veröffentlicht: {formatDate(video.published_at)}
+          Veröffentlicht: {formatDate(videoPublishedAt)}
         </p>
-        {video.is_short && (
+        {videoIsShort && (
           <span className="inline-block mt-2 px-2 py-1 bg-red-500 text-white text-xs font-bold rounded">
             SHORTS
           </span>
@@ -68,7 +79,7 @@ export default async function WatchPage({ params }: WatchPageProps) {
       </div>
       <div className="mt-4">
         <a
-          href={video.url}
+          href={videoUrl}
           target="_blank"
           rel="noopener noreferrer"
           className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"

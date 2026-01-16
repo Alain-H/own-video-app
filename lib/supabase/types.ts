@@ -35,6 +35,3 @@ export type SavedVideo = {
 export type VideoWithChannel = Video & {
   channels: Channel | null;
 };
-
-// Re-export for convenience
-export type { Channel, Video, SavedVideo };
