@@ -1,9 +1,8 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { VideoCard } from '@/components/VideoCard';
 import { ShortsToggle } from '@/components/ShortsToggle';
-import { db } from '@/lib/supabase/server';
 import type { VideoWithChannel } from '@/lib/supabase/types';
 
 export default function FeedPage() {
@@ -11,10 +10,7 @@ export default function FeedPage() {
   const [hideShorts, setHideShorts] = useState(true);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-
-  useEffect(() => {
-    loadVideos();
-  }, [hideShorts]);
+  const hasPolledRef = useRef(false);
 
   const loadVideos = async () => {
     try {
@@ -33,6 +29,54 @@ export default function FeedPage() {
       setLoading(false);
     }
   };
+
+  // Automatischer RSS-Poll beim ersten Laden der Seite
+  useEffect(() => {
+    const pollRSSFeeds = async () => {
+      // Vermeide mehrfache Polls (z.B. bei schnellen Reloads)
+      const lastPollTime = sessionStorage.getItem('rssLastPollTime');
+      const now = Date.now();
+      const fiveMinutes = 5 * 60 * 1000; // 5 Minuten in Millisekunden
+
+      if (lastPollTime && (now - parseInt(lastPollTime)) < fiveMinutes) {
+        // Poll wurde vor weniger als 5 Minuten durchgeführt, überspringe
+        return;
+      }
+
+      if (hasPolledRef.current) {
+        return;
+      }
+      hasPolledRef.current = true;
+
+      try {
+        // Poll im Hintergrund ausführen (nicht blockierend)
+        const response = await fetch('/api/admin/poll-manual', {
+          method: 'POST',
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to poll RSS feeds');
+        }
+
+        // Poll erfolgreich, aktualisiere Zeitstempel
+        sessionStorage.setItem('rssLastPollTime', now.toString());
+
+        // Nach erfolgreichem Poll Videos neu laden
+        await loadVideos();
+      } catch (err) {
+        // Fehlerbehandlung: Loggen aber nicht blockieren
+        console.error('Error polling RSS feeds:', err);
+        // Trotzdem Videos laden, falls bereits vorhanden
+        await loadVideos();
+      }
+    };
+
+    pollRSSFeeds();
+  }, []); // Nur einmal beim Mount ausführen
+
+  useEffect(() => {
+    loadVideos();
+  }, [hideShorts]);
 
   const handleToggleShort = async (videoId: string) => {
     try {
