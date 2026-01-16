@@ -121,10 +121,10 @@ export function ImportDialog({ isOpen, onClose, onImport }: ImportDialogProps) {
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-2xl max-h-[80vh] overflow-y-auto">
-        <h2 className="text-xl font-bold mb-4">Kanäle importieren</h2>
-        <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-[var(--z-dialog-overlay)]">
+      <div className="bg-card text-card-foreground rounded-lg p-6 w-full max-w-2xl max-h-[80vh] overflow-y-auto shadow-modern-lg border border-border glass-effect z-[var(--z-dialog-content)]">
+        <h2 className="text-xl font-bold mb-4 text-foreground">Kanäle importieren</h2>
+        <p className="text-sm text-muted-foreground mb-4">
           Laden Sie eine Datei hoch (JSON, CSV oder TXT). Die App versucht automatisch Channel IDs oder RSS URLs zu erkennen.
         </p>
         <div className="mb-4">
@@ -132,21 +132,21 @@ export function ImportDialog({ isOpen, onClose, onImport }: ImportDialogProps) {
             type="file"
             accept=".json,.csv,.txt"
             onChange={handleFileChange}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md dark:bg-gray-700 dark:border-gray-600"
+            className="w-full px-3 py-2 border border-input rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             disabled={loading}
           />
         </div>
         {error && (
-          <div className="mb-4 text-red-600 text-sm">{error}</div>
+          <div className="mb-4 text-destructive text-sm">{error}</div>
         )}
         {preview.length > 0 && (
           <div className="mb-4">
-            <h3 className="font-medium mb-2">Gefundene Kanäle ({preview.length}):</h3>
-            <div className="max-h-60 overflow-y-auto border border-gray-200 dark:border-gray-700 rounded p-2">
+            <h3 className="font-medium mb-2 text-foreground">Gefundene Kanäle ({preview.length}):</h3>
+            <div className="max-h-60 overflow-y-auto border border-border rounded-md p-2 bg-muted/30">
               {preview.map((channel, idx) => (
-                <div key={idx} className="text-sm py-1">
+                <div key={idx} className="text-sm py-1 text-foreground">
                   {channel.title && <span className="font-medium">{channel.title} - </span>}
-                  <span className="text-gray-600 dark:text-gray-400">{channel.channelId}</span>
+                  <span className="text-muted-foreground">{channel.channelId}</span>
                 </div>
               ))}
             </div>
@@ -156,7 +156,7 @@ export function ImportDialog({ isOpen, onClose, onImport }: ImportDialogProps) {
           <button
             type="button"
             onClick={onClose}
-            className="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50 dark:border-gray-600 dark:hover:bg-gray-700"
+            className="px-4 py-2 border border-border rounded-md bg-secondary text-secondary-foreground hover:bg-secondary/80 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             disabled={loading}
           >
             Abbrechen
@@ -164,7 +164,7 @@ export function ImportDialog({ isOpen, onClose, onImport }: ImportDialogProps) {
           <button
             type="button"
             onClick={handleImport}
-            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
+            className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-medium"
             disabled={loading || preview.length === 0}
           >
             {loading ? 'Importieren...' : 'Importieren'}

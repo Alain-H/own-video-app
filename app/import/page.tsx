@@ -78,39 +78,39 @@ export default function ImportPage() {
     <div>
       <div className="flex justify-between items-center mb-6">
         <div>
-          <h1 className="text-3xl font-bold mb-2">Kanäle importieren</h1>
-          <p className="text-gray-600 dark:text-gray-400">
+          <h1 className="text-3xl font-bold mb-2 text-foreground">Kanäle importieren</h1>
+          <p className="text-muted-foreground">
             Importieren Sie mehrere Kanäle auf einmal aus einer Datei. Die App unterstützt JSON, CSV oder TXT Dateien.
           </p>
-          <p className="text-sm text-gray-500 dark:text-gray-500 mt-2">
-            <strong>Tipp:</strong> Sie können Ihre YouTube Subscriptions über Google Takeout exportieren. 
+          <p className="text-sm text-muted-foreground mt-2">
+            <strong className="text-foreground">Tipp:</strong> Sie können Ihre YouTube Subscriptions über Google Takeout exportieren. 
             Das Format kann variieren, daher versucht die App automatisch Channel IDs oder RSS URLs zu erkennen.
           </p>
         </div>
         <button
           onClick={() => setIsDialogOpen(true)}
-          className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+          className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
           disabled={importing}
         >
           Datei hochladen
         </button>
       </div>
       {error && (
-        <div className="mb-4 p-4 bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-200 rounded-md">
+        <div className="mb-4 p-4 bg-destructive/10 text-destructive rounded-md border border-destructive/20">
           {error}
         </div>
       )}
       {success && (
-        <div className="mb-4 p-4 bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-200 rounded-md">
+        <div className="mb-4 p-4 bg-accent text-accent-foreground rounded-md border border-border">
           {success}
         </div>
       )}
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
-        <h2 className="text-xl font-semibold mb-4">Unterstützte Formate</h2>
+      <div className="bg-card text-card-foreground rounded-lg shadow-modern p-6 border border-border">
+        <h2 className="text-xl font-semibold mb-4 text-foreground">Unterstützte Formate</h2>
         <div className="space-y-4">
           <div>
-            <h3 className="font-medium mb-2">JSON Format:</h3>
-            <pre className="bg-gray-100 dark:bg-gray-900 p-3 rounded text-sm overflow-x-auto">
+            <h3 className="font-medium mb-2 text-foreground">JSON Format:</h3>
+            <pre className="bg-muted/30 border border-border p-3 rounded-md text-sm overflow-x-auto text-foreground">
 {`[
   "UCxxxx...",
   { "channel_id": "UCxxxx...", "title": "Kanal Name" },
@@ -119,15 +119,15 @@ export default function ImportPage() {
             </pre>
           </div>
           <div>
-            <h3 className="font-medium mb-2">CSV Format:</h3>
-            <pre className="bg-gray-100 dark:bg-gray-900 p-3 rounded text-sm overflow-x-auto">
+            <h3 className="font-medium mb-2 text-foreground">CSV Format:</h3>
+            <pre className="bg-muted/30 border border-border p-3 rounded-md text-sm overflow-x-auto text-foreground">
 {`UCxxxx...,Kanal Name
 UCyyyy...,Anderer Kanal`}
             </pre>
           </div>
           <div>
-            <h3 className="font-medium mb-2">TXT Format (eine pro Zeile):</h3>
-            <pre className="bg-gray-100 dark:bg-gray-900 p-3 rounded text-sm overflow-x-auto">
+            <h3 className="font-medium mb-2 text-foreground">TXT Format (eine pro Zeile):</h3>
+            <pre className="bg-muted/30 border border-border p-3 rounded-md text-sm overflow-x-auto text-foreground">
 {`UCxxxx...
 UCyyyy...
 https://www.youtube.com/feeds/videos.xml?channel_id=UCzzzz...`}

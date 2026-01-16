@@ -68,25 +68,25 @@ export default function SavedPage() {
   };
 
   if (loading) {
-    return <div className="text-center py-8">Lade gespeicherte Videos...</div>;
+    return <div className="text-center py-8 text-muted-foreground">Lade gespeicherte Videos...</div>;
   }
 
   return (
     <div>
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold">Gespeicherte Videos</h1>
+        <h1 className="text-3xl font-bold text-foreground">Gespeicherte Videos</h1>
         <button
           onClick={() => setIsDialogOpen(true)}
-          className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+          className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors font-medium"
         >
           Video-Link hinzufügen
         </button>
       </div>
       {error && (
-        <div className="mb-4 text-red-600">{error}</div>
+        <div className="mb-4 text-destructive">{error}</div>
       )}
       {savedVideos.length === 0 ? (
-        <div className="text-center py-8 text-gray-500">
+        <div className="text-center py-8 text-muted-foreground">
           Keine gespeicherten Videos. Fügen Sie einen Video-Link hinzu.
         </div>
       ) : (
@@ -94,21 +94,21 @@ export default function SavedPage() {
           {savedVideos.map((video) => (
             <div
               key={video.id}
-              className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-4"
+              className="bg-card text-card-foreground rounded-lg shadow-modern p-4 border border-border"
             >
-              <div className="aspect-video bg-gray-200 dark:bg-gray-700 rounded mb-4 relative">
+              <div className="aspect-video bg-muted rounded-md mb-4 relative overflow-hidden">
                 <img
                   src={`https://img.youtube.com/vi/${video.youtube_video_id}/mqdefault.jpg`}
                   alt={video.title || 'Video'}
-                  className="w-full h-full object-cover rounded"
+                  className="w-full h-full object-cover"
                 />
               </div>
-              <h3 className="font-semibold mb-2 line-clamp-2">
+              <h3 className="font-semibold mb-2 line-clamp-2 text-foreground">
                 {video.title || 'Unbenanntes Video'}
               </h3>
               <Link
                 href={`/watch/${video.youtube_video_id}`}
-                className="inline-block w-full text-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+                className="inline-block w-full text-center px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors font-medium"
               >
                 Abspielen
               </Link>
@@ -117,12 +117,12 @@ export default function SavedPage() {
         </div>
       )}
       {isDialogOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-md">
-            <h2 className="text-xl font-bold mb-4">Video-Link hinzufügen</h2>
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-[var(--z-dialog-overlay)]">
+          <div className="bg-card text-card-foreground rounded-lg p-6 w-full max-w-md shadow-modern-lg border border-border glass-effect z-[var(--z-dialog-content)]">
+            <h2 className="text-xl font-bold mb-4 text-foreground">Video-Link hinzufügen</h2>
             <form onSubmit={handleAddVideo}>
               <div className="mb-4">
-                <label className="block text-sm font-medium mb-2">
+                <label className="block text-sm font-medium mb-2 text-foreground">
                   YouTube URL
                 </label>
                 <input
@@ -130,12 +130,12 @@ export default function SavedPage() {
                   value={videoUrl}
                   onChange={(e) => setVideoUrl(e.target.value)}
                   placeholder="https://www.youtube.com/watch?v=..."
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md dark:bg-gray-700 dark:border-gray-600"
+                  className="w-full px-3 py-2 border border-input rounded-md bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                   disabled={adding}
                 />
               </div>
               {error && (
-                <div className="mb-4 text-red-600 text-sm">{error}</div>
+                <div className="mb-4 text-destructive text-sm">{error}</div>
               )}
               <div className="flex gap-2 justify-end">
                 <button
@@ -145,14 +145,14 @@ export default function SavedPage() {
                     setVideoUrl('');
                     setError('');
                   }}
-                  className="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50 dark:border-gray-600 dark:hover:bg-gray-700"
+                  className="px-4 py-2 border border-border rounded-md bg-secondary text-secondary-foreground hover:bg-secondary/80 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                   disabled={adding}
                 >
                   Abbrechen
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
+                  className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-medium"
                   disabled={adding}
                 >
                   {adding ? 'Hinzufügen...' : 'Hinzufügen'}

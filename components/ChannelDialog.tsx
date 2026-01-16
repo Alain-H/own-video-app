@@ -81,12 +81,12 @@ export function ChannelDialog({ isOpen, onClose, mode = 'add', channel, onAdd, o
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-md">
-        <h2 className="text-xl font-bold mb-4">{mode === 'edit' ? 'Kanal bearbeiten' : 'Kanal hinzufügen'}</h2>
+    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-[var(--z-dialog-overlay)]">
+      <div className="bg-card text-card-foreground rounded-lg p-6 w-full max-w-md shadow-modern-lg border border-border glass-effect z-[var(--z-dialog-content)]">
+        <h2 className="text-xl font-bold mb-4 text-foreground">{mode === 'edit' ? 'Kanal bearbeiten' : 'Kanal hinzufügen'}</h2>
         <form onSubmit={handleSubmit}>
           <div className="mb-4">
-            <label className="block text-sm font-medium mb-2">
+            <label className="block text-sm font-medium mb-2 text-foreground">
               Channel ID (UC...) oder RSS URL
             </label>
             <input
@@ -94,12 +94,12 @@ export function ChannelDialog({ isOpen, onClose, mode = 'add', channel, onAdd, o
               value={input}
               onChange={(e) => setInput(e.target.value)}
               placeholder="UCxxxx... oder https://www.youtube.com/feeds/videos.xml?channel_id=UCxxxx"
-              className="w-full px-3 py-2 border border-gray-300 rounded-md dark:bg-gray-700 dark:border-gray-600"
+              className="w-full px-3 py-2 border border-input rounded-md bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               disabled={loading}
             />
           </div>
           <div className="mb-4">
-            <label className="block text-sm font-medium mb-2">
+            <label className="block text-sm font-medium mb-2 text-foreground">
               Titel (optional)
             </label>
             <input
@@ -107,25 +107,25 @@ export function ChannelDialog({ isOpen, onClose, mode = 'add', channel, onAdd, o
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="Kanalname"
-              className="w-full px-3 py-2 border border-gray-300 rounded-md dark:bg-gray-700 dark:border-gray-600"
+              className="w-full px-3 py-2 border border-input rounded-md bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               disabled={loading}
             />
           </div>
           {error && (
-            <div className="mb-4 text-red-600 text-sm">{error}</div>
+            <div className="mb-4 text-destructive text-sm">{error}</div>
           )}
           <div className="flex gap-2 justify-end">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50 dark:border-gray-600 dark:hover:bg-gray-700"
+              className="px-4 py-2 border border-border rounded-md bg-secondary text-secondary-foreground hover:bg-secondary/80 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               disabled={loading}
             >
               Abbrechen
             </button>
             <button
               type="submit"
-              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
+              className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-medium"
               disabled={loading}
             >
               {loading ? (mode === 'edit' ? 'Speichern...' : 'Hinzufügen...') : (mode === 'edit' ? 'Speichern' : 'Hinzufügen')}

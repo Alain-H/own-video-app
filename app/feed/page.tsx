@@ -47,11 +47,11 @@ export default function FeedPage() {
   };
 
   if (loading) {
-    return <div className="text-center py-8">Lade Videos...</div>;
+    return <div className="text-center py-8 text-muted-foreground">Lade Videos...</div>;
   }
 
   if (error) {
-    return <div className="text-center py-8 text-red-600">{error}</div>;
+    return <div className="text-center py-8 text-destructive">{error}</div>;
   }
 
   // Gruppiere Videos nach Kanal und nehme pro Kanal max. 3 neueste Videos
@@ -82,17 +82,17 @@ export default function FeedPage() {
 
   return (
     <div>
-      <h1 className="text-3xl font-bold mb-6">Video Feed</h1>
+      <h1 className="text-3xl font-bold mb-6 text-foreground">Video Feed</h1>
       <ShortsToggle hideShorts={hideShorts} onToggle={setHideShorts} />
       {channelGroups.length === 0 ? (
-        <div className="text-center py-8 text-gray-500">
+        <div className="text-center py-8 text-muted-foreground">
           Keine Videos gefunden. Fügen Sie Kanäle hinzu oder importieren Sie welche.
         </div>
       ) : (
         <div className="space-y-8">
           {channelGroups.map((group, idx) => (
             <div key={group.channel?.id || `unknown-${idx}`} className="space-y-4">
-              <h2 className="text-2xl font-semibold border-b border-gray-200 dark:border-gray-700 pb-2">
+              <h2 className="text-2xl font-semibold border-b border-border pb-2 text-foreground">
                 {group.channelName}
               </h2>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">

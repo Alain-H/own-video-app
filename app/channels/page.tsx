@@ -88,28 +88,28 @@ export default function ChannelsPage() {
   };
 
   if (loading) {
-    return <div className="text-center py-8">Lade Kanäle...</div>;
+    return <div className="text-center py-8 text-muted-foreground">Lade Kanäle...</div>;
   }
 
   return (
     <div>
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold">Kanäle</h1>
+        <h1 className="text-3xl font-bold text-foreground">Kanäle</h1>
         <button
           onClick={() => {
             setEditingChannel(null);
             setIsDialogOpen(true);
           }}
-          className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+          className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors font-medium"
         >
           Kanal hinzufügen
         </button>
       </div>
       {error && (
-        <div className="mb-4 text-red-600">{error}</div>
+        <div className="mb-4 text-destructive">{error}</div>
       )}
       {channels.length === 0 ? (
-        <div className="text-center py-8 text-gray-500">
+        <div className="text-center py-8 text-muted-foreground">
           Keine Kanäle vorhanden. Fügen Sie einen Kanal hinzu.
         </div>
       ) : (
@@ -117,17 +117,17 @@ export default function ChannelsPage() {
           {channels.map((channel) => (
             <div
               key={channel.id}
-              className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 flex items-center justify-between"
+              className="bg-card text-card-foreground rounded-lg shadow-modern p-4 flex items-center justify-between border border-border"
             >
               <div>
-                <h3 className="font-semibold text-lg">
+                <h3 className="font-semibold text-lg text-foreground">
                   {channel.title || channel.channel_id}
                 </h3>
-                <p className="text-sm text-gray-600 dark:text-gray-400">
+                <p className="text-sm text-muted-foreground">
                   {channel.channel_id}
                 </p>
                 {channel.last_polled_at && (
-                  <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">
+                  <p className="text-xs text-muted-foreground mt-1">
                     Zuletzt aktualisiert: {new Date(channel.last_polled_at).toLocaleString('de-DE')}
                   </p>
                 )}
@@ -136,21 +136,21 @@ export default function ChannelsPage() {
                 <span
                   className={`px-3 py-1 rounded-full text-sm ${
                     channel.is_active
-                      ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
-                      : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200'
+                      ? 'bg-accent text-accent-foreground'
+                      : 'bg-muted text-muted-foreground'
                   }`}
                 >
                   {channel.is_active ? 'Aktiv' : 'Inaktiv'}
                 </span>
                 <button
                   onClick={() => handleOpenEditDialog(channel)}
-                  className="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50 dark:border-gray-600 dark:hover:bg-gray-700"
+                  className="px-4 py-2 border border-border rounded-md bg-secondary text-secondary-foreground hover:bg-secondary/80 transition-colors"
                 >
                   Bearbeiten
                 </button>
                 <button
                   onClick={() => handleToggleActive(channel.id, channel.is_active)}
-                  className="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50 dark:border-gray-600 dark:hover:bg-gray-700"
+                  className="px-4 py-2 border border-border rounded-md bg-secondary text-secondary-foreground hover:bg-secondary/80 transition-colors"
                 >
                   {channel.is_active ? 'Deaktivieren' : 'Aktivieren'}
                 </button>

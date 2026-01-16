@@ -15,11 +15,11 @@ export function VideoCard({ video, onToggleShort }: VideoCardProps) {
   const thumbnailUrl = video.thumbnail_url || `https://img.youtube.com/vi/${video.youtube_video_id}/mqdefault.jpg`;
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow">
+    <div className="bg-card text-card-foreground rounded-lg shadow-modern overflow-hidden hover:shadow-modern-lg transition-all duration-300 border border-border">
       <Link href={`/watch/${video.youtube_video_id}`}>
-        <div className="relative w-full aspect-video bg-gray-200 dark:bg-gray-700">
+        <div className="relative w-full aspect-video bg-muted overflow-hidden">
           {video.is_short && (
-            <div className="absolute top-2 right-2 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded">
+            <div className="absolute top-2 right-2 bg-destructive text-destructive-foreground text-xs font-bold px-2 py-1 rounded-md z-10">
               SHORTS
             </div>
           )}
@@ -27,21 +27,21 @@ export function VideoCard({ video, onToggleShort }: VideoCardProps) {
             src={thumbnailUrl}
             alt={video.title}
             fill
-            className="object-cover"
+            className="object-cover transition-transform duration-300 hover:scale-105"
             unoptimized
           />
         </div>
       </Link>
       <div className="p-4">
         <Link href={`/watch/${video.youtube_video_id}`}>
-          <h3 className="font-semibold text-lg mb-2 line-clamp-2 hover:text-blue-600 dark:hover:text-blue-400">
+          <h3 className="font-semibold text-lg mb-2 line-clamp-2 hover:text-primary transition-colors text-foreground">
             {video.title}
           </h3>
         </Link>
-        <div className="flex items-center justify-between text-sm text-gray-600 dark:text-gray-400">
+        <div className="flex items-center justify-between text-sm text-muted-foreground">
           <div>
             {channel && (
-              <span className="font-medium">{channel.title || channel.channel_id}</span>
+              <span className="font-medium text-foreground">{channel.title || channel.channel_id}</span>
             )}
             <span className="mx-2">•</span>
             <span>{formatRelativeTime(video.published_at)}</span>
@@ -53,7 +53,7 @@ export function VideoCard({ video, onToggleShort }: VideoCardProps) {
               e.preventDefault();
               onToggleShort(video.id);
             }}
-            className="mt-2 text-xs text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+            className="mt-2 text-xs text-muted-foreground hover:text-foreground transition-colors"
           >
             {video.is_short ? 'Short-Markierung entfernen' : 'Als Short markieren'}
           </button>

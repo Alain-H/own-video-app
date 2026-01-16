@@ -53,7 +53,7 @@ export default async function WatchPage({ params }: WatchPageProps) {
   return (
     <div className="max-w-4xl mx-auto">
       <div className="mb-6">
-        <div className="aspect-video bg-black rounded-lg overflow-hidden mb-4">
+        <div className="aspect-video bg-muted rounded-lg overflow-hidden mb-4 border border-border shadow-modern">
           <iframe
             src={embedUrl}
             title={videoTitle}
@@ -62,17 +62,17 @@ export default async function WatchPage({ params }: WatchPageProps) {
             className="w-full h-full"
           />
         </div>
-        <h1 className="text-2xl font-bold mb-2">{videoTitle}</h1>
+        <h1 className="text-2xl font-bold mb-2 text-foreground">{videoTitle}</h1>
         {videoChannels && (
-          <p className="text-gray-600 dark:text-gray-400 mb-2">
-            Kanal: {videoChannels.title || videoChannels.channel_id}
+          <p className="text-muted-foreground mb-2">
+            Kanal: <span className="text-foreground font-medium">{videoChannels.title || videoChannels.channel_id}</span>
           </p>
         )}
-        <p className="text-sm text-gray-500 dark:text-gray-500">
+        <p className="text-sm text-muted-foreground">
           Veröffentlicht: {formatDate(videoPublishedAt)}
         </p>
         {videoIsShort && (
-          <span className="inline-block mt-2 px-2 py-1 bg-red-500 text-white text-xs font-bold rounded">
+          <span className="inline-block mt-2 px-2 py-1 bg-destructive text-destructive-foreground text-xs font-bold rounded-md">
             SHORTS
           </span>
         )}
@@ -82,7 +82,7 @@ export default async function WatchPage({ params }: WatchPageProps) {
           href={videoUrl}
           target="_blank"
           rel="noopener noreferrer"
-          className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
+          className="text-primary hover:text-primary/80 transition-colors font-medium"
         >
           Auf YouTube öffnen →
         </a>
