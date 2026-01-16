@@ -1,0 +1,15 @@
+name: Poll RSS Feeds
+
+on:
+  schedule:
+    # Alle 30 Minuten
+    - cron: '*/30 * * * *'
+  workflow_dispatch:  # Optional: Erlaubt manuelles Auslösen über GitHub UI
+
+jobs:
+  poll:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Poll RSS Feeds
+        run: |
+          curl -X POST "${{ secrets.APP_URL }}/api/admin/poll?token=${{ secrets.ADMIN_TOKEN }}"
