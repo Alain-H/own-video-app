@@ -1,5 +1,46 @@
-import { createClient } from '@supabase/supabase-js';
+import { createServerClient } from '@supabase/ssr';
+import { createClient as createSupabaseJsClient } from '@supabase/supabase-js';
+import { cookies } from 'next/headers';
 import type { Channel, Video, SavedVideo } from './types';
+
+// Server-side client for authentication (uses SSR with cookies)
+export async function createServerSupabaseClient() {
+  const cookieStore = await cookies();
+
+  return createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        getAll() {
+          return cookieStore.getAll();
+        },
+        setAll(cookiesToSet) {
+          try {
+            cookiesToSet.forEach(({ name, value, options }) => {
+              // Ensure session cookies (no Expires/Max-Age)
+              // Session cookies are deleted when the browser closes
+              cookieStore.set(name, value, {
+                ...options,
+                // Explicitly remove expires and maxAge to make it a session cookie
+                expires: undefined,
+                maxAge: undefined,
+                // Keep other options like httpOnly, secure, sameSite
+                httpOnly: options?.httpOnly ?? true,
+                secure: options?.secure ?? process.env.NODE_ENV === 'production',
+                sameSite: options?.sameSite ?? 'lax',
+              });
+            });
+          } catch {
+            // The `setAll` method was called from a Server Component.
+            // This can be ignored if you have middleware refreshing
+            // user sessions.
+          }
+        },
+      },
+    }
+  );
+}
 
 // Use SUPABASE_URL or fallback to NEXT_PUBLIC_SUPABASE_URL for server-side
 const supabaseUrl = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -18,7 +59,7 @@ if (!supabaseUrl || !supabaseServiceRoleKey) {
 }
 
 // Server-side client with service role key (bypasses RLS)
-export const supabaseAdmin = createClient(supabaseUrl, supabaseServiceRoleKey, {
+export const supabaseAdmin = createSupabaseJsClient(supabaseUrl, supabaseServiceRoleKey, {
   auth: {
     autoRefreshToken: false,
     persistSession: false,
