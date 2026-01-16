@@ -1,8 +1,8 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import Link from 'next/link';
 import { VideoCard } from '@/components/VideoCard';
+import { MoreVideosCard } from '@/components/MoreVideosCard';
 import { ShortsToggle } from '@/components/ShortsToggle';
 import type { VideoWithChannel } from '@/lib/supabase/types';
 
@@ -157,30 +157,9 @@ export default function FeedPage() {
         <div className="space-y-8">
           {channelGroups.map((group, idx) => (
             <div key={group.channel?.id || `unknown-${idx}`} className="space-y-4">
-              <div className="flex items-center justify-between border-b border-border pb-2">
-                <h2 className="text-2xl font-semibold text-foreground">
-                  {group.channelName}
-                </h2>
-                {group.channel?.id && (
-                  <Link
-                    href={`/channels/${group.channel.id}`}
-                    className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors px-3 py-1 rounded-md hover:bg-accent"
-                    title="Alle Videos dieses Kanals anzeigen"
-                  >
-                    <span className="text-sm">Mehr Videos</span>
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      className="h-5 w-5"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                      strokeWidth={2}
-                    >
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-                    </svg>
-                  </Link>
-                )}
-              </div>
+              <h2 className="text-3xl font-bold border-b-2 border-primary/30 pb-3 text-foreground mt-8 first:mt-0">
+                {group.channelName}
+              </h2>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                 {group.videos.map((video) => (
                   <VideoCard
@@ -189,6 +168,9 @@ export default function FeedPage() {
                     onToggleShort={handleToggleShort}
                   />
                 ))}
+                {group.channel?.id && (
+                  <MoreVideosCard channelId={group.channel.id} />
+                )}
               </div>
             </div>
           ))}
