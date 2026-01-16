@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/supabase/server';
 import { parseRSSFeed, detectShortFromRSS } from '@/lib/rss/parser';
+import { isValidRssUrl, fixRssUrl } from '@/lib/youtube/parser';
 
 // This endpoint is for manual triggering from the admin UI
 // It doesn't require a token since it's called from the same app
@@ -19,8 +20,33 @@ export async function POST() {
 
     for (const channel of channels) {
       try {
+        // Validate and potentially fix RSS URL
+        let rssUrl = channel.rss_url;
+        if (!isValidRssUrl(rssUrl)) {
+          const fixedUrl = fixRssUrl(rssUrl);
+          if (fixedUrl) {
+            console.warn(`RSS URL für Channel ${channel.channel_id} korrigiert: ${rssUrl} -> ${fixedUrl}`);
+            rssUrl = fixedUrl;
+          } else {
+            const errorMsg = `Ungültige RSS-URL für Channel ${channel.channel_id}: ${rssUrl}. @handle URLs können nicht automatisch konvertiert werden - bitte Channel-ID verwenden oder Channel bearbeiten.`;
+            results.errors.push(errorMsg);
+            console.warn(`Channel ${channel.channel_id} übersprungen: ${errorMsg}`);
+            continue; // Skip this channel
+          }
+        }
+
         // Fetch and parse RSS feed
-        const entries = await parseRSSFeed(channel.rss_url);
+        let entries;
+        try {
+          entries = await parseRSSFeed(rssUrl);
+          console.log(`[RSS Poll] Channel ${channel.channel_id}: ${entries.length} Videos im RSS-Feed gefunden`);
+        } catch (feedError) {
+          // RSS Feed konnte nicht geladen werden (z.B. 404, Netzwerkfehler)
+          const errorMsg = `RSS Feed konnte nicht geladen werden für Channel ${channel.channel_id} (${rssUrl}): ${feedError instanceof Error ? feedError.message : 'Unknown error'}`;
+          results.errors.push(errorMsg);
+          console.warn(`Channel ${channel.channel_id} übersprungen: ${errorMsg}`);
+          continue; // Skip this channel
+        }
 
         for (const entry of entries) {
           try {

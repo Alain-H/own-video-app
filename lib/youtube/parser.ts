@@ -69,3 +69,41 @@ export function buildRssUrl(channelId: string): string {
 export function isValidChannelId(channelId: string): boolean {
   return /^UC[a-zA-Z0-9_-]{22}$/.test(channelId.trim());
 }
+
+/**
+ * Checks if a URL is a valid YouTube RSS feed URL
+ */
+export function isValidRssUrl(url: string): boolean {
+  return url.includes('/feeds/videos.xml') || url.includes('/feeds/videos.xml?');
+}
+
+/**
+ * Attempts to fix or convert a YouTube URL to a valid RSS URL
+ * Note: For @handle URLs, this cannot be automatically converted without the Channel ID
+ */
+export function fixRssUrl(url: string): string | null {
+  const trimmed = url.trim();
+  
+  // Already a valid RSS URL
+  if (isValidRssUrl(trimmed)) {
+    return trimmed;
+  }
+  
+  // Try to extract channel_id from existing URL
+  const channelIdMatch = trimmed.match(/[?&]channel_id=([a-zA-Z0-9_-]{24})/);
+  if (channelIdMatch) {
+    return buildRssUrl(channelIdMatch[1]);
+  }
+  
+  // If it's a @handle URL, we can't automatically convert it
+  if (trimmed.includes('@') && trimmed.includes('youtube.com')) {
+    return null; // Cannot convert @handle to RSS without Channel ID
+  }
+  
+  // If it's a valid channel ID, build RSS URL
+  if (isValidChannelId(trimmed)) {
+    return buildRssUrl(trimmed);
+  }
+  
+  return null;
+}

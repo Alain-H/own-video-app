@@ -8,11 +8,19 @@ export async function GET(request: NextRequest) {
     const hideHidden = searchParams.get('hideHidden') === 'true';
     const perChannel = searchParams.get('perChannel');
     const perChannelLimit = perChannel ? parseInt(perChannel, 10) : undefined;
+    const channelId = searchParams.get('channelId') || undefined;
+    const offset = searchParams.get('offset');
+    const offsetValue = offset ? parseInt(offset, 10) : undefined;
+    const limit = searchParams.get('limit');
+    const limitValue = limit ? parseInt(limit, 10) : undefined;
 
     const videos = await db.getVideos({
       hideShorts,
       hideHidden,
       perChannel: perChannelLimit,
+      channelId,
+      offset: offsetValue,
+      limit: limitValue,
     });
 
     return NextResponse.json(videos);

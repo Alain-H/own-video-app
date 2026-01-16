@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { buildRssUrl, isValidChannelId } from '@/lib/youtube/parser';
+import { buildRssUrl, isValidChannelId, isValidRssUrl } from '@/lib/youtube/parser';
 import { z } from 'zod';
 import type { Channel } from '@/lib/supabase/types';
 
@@ -48,21 +48,55 @@ export function ChannelDialog({ isOpen, onClose, mode = 'add', channel, onAdd, o
       let channelId: string;
       let rssUrl: string;
 
+      const trimmedInput = input.trim();
+
       // Check if input is a valid channel ID
-      if (isValidChannelId(input.trim())) {
-        channelId = input.trim();
+      if (isValidChannelId(trimmedInput)) {
+        channelId = trimmedInput;
         rssUrl = buildRssUrl(channelId);
-      } else if (input.trim().startsWith('http')) {
-        // Assume it's an RSS URL
-        rssUrl = input.trim();
-        // Try to extract channel ID from URL
-        const match = rssUrl.match(/channel_id=([a-zA-Z0-9_-]+)/);
-        channelId = match ? match[1] : rssUrl; // Fallback to URL as ID
+      } else if (trimmedInput.startsWith('http')) {
+        // Check if it's a YouTube @handle URL or channel URL
+        if (trimmedInput.includes('youtube.com') && (trimmedInput.includes('@') || trimmedInput.includes('/channel/'))) {
+          // Extract channel ID from YouTube URL (including @handle)
+          setLoading(true);
+          const response = await fetch('/api/youtube/extract-channel-id', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ url: trimmedInput }),
+          });
+
+          if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            throw new Error(errorData.error || 'Konnte Channel-ID nicht extrahieren');
+          }
+
+          const data = await response.json();
+          channelId = data.channelId;
+          rssUrl = data.rssUrl;
+        } else if (isValidRssUrl(trimmedInput)) {
+          // It's already a valid RSS URL
+          rssUrl = trimmedInput;
+          // Try to extract channel ID from RSS URL
+          const match = rssUrl.match(/channel_id=([a-zA-Z0-9_-]+)/);
+          channelId = match ? match[1] : rssUrl; // Fallback to URL as ID
+        } else {
+          // Try to extract channel ID from URL or treat as RSS URL
+          const match = trimmedInput.match(/channel_id=([a-zA-Z0-9_-]+)/);
+          if (match) {
+            channelId = match[1];
+            rssUrl = buildRssUrl(channelId);
+          } else {
+            throw new Error('Ungültige URL. Bitte geben Sie eine YouTube Channel-URL (z.B. https://www.youtube.com/@username) oder eine RSS-URL ein.');
+          }
+        }
       } else {
-        throw new Error('Ungültige Channel ID oder RSS URL');
+        throw new Error('Ungültige Eingabe. Bitte geben Sie eine Channel-ID (UC...), eine YouTube Channel-URL oder eine RSS-URL ein.');
       }
 
-      setLoading(true);
+      // setLoading is already set above for YouTube URL extraction, or we need to set it here for other cases
+      if (!trimmedInput.includes('youtube.com') || (!trimmedInput.includes('@') && !trimmedInput.includes('/channel/'))) {
+        setLoading(true);
+      }
       
       if (mode === 'edit' && channel && onEdit) {
         await onEdit(channel.id, channelId, rssUrl, title.trim() || undefined);
@@ -87,16 +121,19 @@ export function ChannelDialog({ isOpen, onClose, mode = 'add', channel, onAdd, o
         <form onSubmit={handleSubmit}>
           <div className="mb-4">
             <label className="block text-sm font-medium mb-2 text-foreground">
-              Channel ID (UC...) oder RSS URL
+              YouTube Channel URL, Channel ID (UC...) oder RSS URL
             </label>
             <input
               type="text"
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              placeholder="UCxxxx... oder https://www.youtube.com/feeds/videos.xml?channel_id=UCxxxx"
+              placeholder="https://www.youtube.com/@username oder UCxxxx... oder RSS-URL"
               className="w-full px-3 py-2 border border-input rounded-md bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               disabled={loading}
             />
+            <p className="text-xs text-muted-foreground mt-1">
+              Unterstützte Formate: @handle URLs, Channel-URLs, Channel-IDs oder RSS-URLs
+            </p>
           </div>
           <div className="mb-4">
             <label className="block text-sm font-medium mb-2 text-foreground">

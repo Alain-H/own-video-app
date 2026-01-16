@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
+import Link from 'next/link';
 import { VideoCard } from '@/components/VideoCard';
 import { ShortsToggle } from '@/components/ShortsToggle';
 import type { VideoWithChannel } from '@/lib/supabase/types';
@@ -15,16 +16,23 @@ export default function FeedPage() {
   const loadVideos = async () => {
     try {
       setLoading(true);
+      setError(''); // Clear previous errors
       const response = await fetch('/api/videos?' + new URLSearchParams({
         hideShorts: hideShorts.toString(),
         hideHidden: 'true',
         perChannel: '3', // Server-seitig nur 3 Videos pro Kanal holen
       }));
-      if (!response.ok) throw new Error('Failed to load videos');
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || `Failed to load videos: ${response.status}`);
+      }
       const data = await response.json();
+      console.log(`Videos geladen: ${data.length} Videos gefunden`);
       setVideos(data);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Fehler beim Laden der Videos');
+      const errorMessage = err instanceof Error ? err.message : 'Fehler beim Laden der Videos';
+      console.error('Fehler beim Laden der Videos:', err);
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -38,25 +46,35 @@ export default function FeedPage() {
       const now = Date.now();
       const fiveMinutes = 5 * 60 * 1000; // 5 Minuten in Millisekunden
 
-      if (lastPollTime && (now - parseInt(lastPollTime)) < fiveMinutes) {
-        // Poll wurde vor weniger als 5 Minuten durchgeführt, überspringe
-        return;
-      }
+      const shouldSkipPoll = lastPollTime && (now - parseInt(lastPollTime)) < fiveMinutes;
 
       if (hasPolledRef.current) {
         return;
       }
       hasPolledRef.current = true;
 
+      if (shouldSkipPoll) {
+        // Poll wurde vor weniger als 5 Minuten durchgeführt, überspringe Poll
+        // aber lade trotzdem Videos
+        console.log('RSS Poll übersprungen (Rate Limit). Lade vorhandene Videos...');
+        await loadVideos();
+        return;
+      }
+
       try {
+        console.log('Starte RSS Feed Poll...');
         // Poll im Hintergrund ausführen (nicht blockierend)
         const response = await fetch('/api/admin/poll-manual', {
           method: 'POST',
         });
 
         if (!response.ok) {
-          throw new Error('Failed to poll RSS feeds');
+          const errorData = await response.json().catch(() => ({}));
+          throw new Error(errorData.error || `Failed to poll RSS feeds: ${response.status}`);
         }
+
+        const pollResult = await response.json();
+        console.log('RSS Poll erfolgreich:', pollResult);
 
         // Poll erfolgreich, aktualisiere Zeitstempel
         sessionStorage.setItem('rssLastPollTime', now.toString());
@@ -75,7 +93,10 @@ export default function FeedPage() {
   }, []); // Nur einmal beim Mount ausführen
 
   useEffect(() => {
+    // Lade Videos wenn hideShorts sich ändert
+    // (auch beim initialen Mount, falls der Poll-Effekt noch läuft oder fehlgeschlagen ist)
     loadVideos();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [hideShorts]);
 
   const handleToggleShort = async (videoId: string) => {
@@ -136,9 +157,30 @@ export default function FeedPage() {
         <div className="space-y-8">
           {channelGroups.map((group, idx) => (
             <div key={group.channel?.id || `unknown-${idx}`} className="space-y-4">
-              <h2 className="text-2xl font-semibold border-b border-border pb-2 text-foreground">
-                {group.channelName}
-              </h2>
+              <div className="flex items-center justify-between border-b border-border pb-2">
+                <h2 className="text-2xl font-semibold text-foreground">
+                  {group.channelName}
+                </h2>
+                {group.channel?.id && (
+                  <Link
+                    href={`/channels/${group.channel.id}`}
+                    className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors px-3 py-1 rounded-md hover:bg-accent"
+                    title="Alle Videos dieses Kanals anzeigen"
+                  >
+                    <span className="text-sm">Mehr Videos</span>
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-5 w-5"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                      strokeWidth={2}
+                    >
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                    </svg>
+                  </Link>
+                )}
+              </div>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                 {group.videos.map((video) => (
                   <VideoCard

@@ -100,6 +100,8 @@ export const db = {
     hideHidden?: boolean;
     limit?: number;
     perChannel?: number; // Anzahl Videos pro Kanal
+    channelId?: string; // Filter nach channel_id (Datenbank-ID des Channels)
+    offset?: number; // Offset für Pagination
   } = {}) {
     let query = supabaseAdmin
       .from('videos')
@@ -115,12 +117,28 @@ export const db = {
     if (options.hideHidden) {
       query = query.eq('is_hidden', false);
     }
-    if (options.limit) {
+    if (options.channelId) {
+      query = query.eq('channel_id', options.channelId);
+    }
+    if (options.offset !== undefined && options.offset > 0) {
+      // Verwende range für Pagination (offset > 0)
+      const limit = options.limit || 30;
+      query = query.range(options.offset, options.offset + limit - 1);
+    } else if (options.limit) {
+      // Verwende limit wenn kein offset oder offset = 0
       query = query.limit(options.limit);
     }
 
     const { data, error } = await query;
-    if (error) throw error;
+    if (error) {
+      console.error('Supabase query error:', error);
+      throw error;
+    }
+    
+    // Debug logging für Kanal-Queries
+    if (options.channelId && options.limit) {
+      console.log(`[DB] Videos für Kanal ${options.channelId}: ${data?.length || 0} Videos gefunden (limit: ${options.limit}, offset: ${options.offset || 0}, hideShorts: ${options.hideShorts})`);
+    }
     
     let videos = data as VideoWithChannel[];
     
