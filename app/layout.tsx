@@ -2,8 +2,10 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { VideoSearch } from '@/components/VideoSearch';
+import { SignOutButton } from '@/components/auth/sign-out-button';
 import './globals.css';
 
 export default function RootLayout({
@@ -39,8 +41,16 @@ export default function RootLayout({
             <div className="flex justify-between h-16">
               <div className="flex items-center w-full justify-between">
                 <div className="flex">
-                  <Link href="/feed" className="flex items-center px-2 py-2 text-xl font-bold gradient-text">
-                    Mini YouTube
+                  <Link href="/feed" className="flex items-center gap-3 px-2 py-2">
+                    <Image
+                      src="/DA-LOGO-OrangeWhite.svg"
+                      alt="Digital Apes Logo"
+                      width={40}
+                      height={40}
+                      className="h-10 w-auto"
+                      priority
+                    />
+                    <span className="text-xl font-bold gradient-text">QuietTube</span>
                   </Link>
                   <div className="hidden sm:ml-6 sm:flex sm:space-x-8">
                     <Link
@@ -95,6 +105,7 @@ export default function RootLayout({
                     </kbd>
                   </button>
                   <ThemeToggle />
+                  <SignOutButton className="hidden sm:flex rounded-md px-3 py-2 text-sm border border-border hover:bg-accent/50 transition-colors" />
                 </div>
               </div>
             </div>
