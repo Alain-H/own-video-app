@@ -1,6 +1,7 @@
 import { notFound } from 'next/navigation';
 import { db } from '@/lib/supabase/server';
 import { formatDate } from '@/lib/utils';
+import { BackButton } from '@/components/BackButton';
 
 interface WatchPageProps {
   params: Promise<{
@@ -52,6 +53,7 @@ export default async function WatchPage({ params }: WatchPageProps) {
 
   return (
     <div className="max-w-4xl mx-auto">
+      <BackButton />
       <div className="mb-6">
         <div className="aspect-video bg-muted rounded-lg overflow-hidden mb-4 border border-border shadow-modern">
           <iframe
